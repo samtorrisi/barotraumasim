@@ -1,14 +1,14 @@
 # barosim
 
-A simulation of one patient's hearing damage.
-Designed to allow others to hear what the patient hears.
-Built on SuperCollider's engine, ver 3.14.0,
-compiled to WebAssembly by [SuperSonic] ver 0.88.0.
+A simulation of a single patient's hearing damage.
+Designed to let others to hear what the patient hears.
+Built on SuperCollider's engine, compiled to WebAssembly 
+by [SuperSonic].
 **Use good headphones.**
 
 **[Try it in your browser →](https://samtorrisi.github.io/barotraumasim/)**
 
-by Sam Torrisi + Claude Sonnet 5.5, July-Oct 2026
+by Salvatore (Sam) Torrisi + Claude Sonnet, July, Aug and Oct 2026
 
 ## What you hear
 
@@ -55,7 +55,7 @@ and `../sounds/samples/` (audio).
 
 ## Settings: `date-profiles.json`
 
-All the numbers that define the damage are here, one entry per assessment
+All the numbers that define the damage are there, one entry per assessment
 date. The page reads them at startup, sorts oldest to newest, and opens on the
 newest. Switching dates restarts playback with that date's sound.
 
@@ -81,11 +81,11 @@ newest. Switching dates restarts playback with that date's sound.
 Ear, tinnitus on/off, sound choice and output level are controlled by the page,
 not the file. Keep every entry complete: anything left out is inherited from
 the *oldest* entry, so retuning that one would silently change the others.
-`lpfOrder` (the number of filters in a row) is also listed, only so the graph
-matches the synth.
+`lpfOrder` (number of filters in a row) is only listed so the graph matches the synth.
 
-## Workflow: when the patient wants a new assessment to document their 'healing'
+## Workflow: when patient wants a new assessment: use date-param-profiles9.scd
 
+0. The purpose of a new assessment is to document potential healing across time.
 1. In the SuperCollider IDE, open `date-param-profiles9.scd` and run it.
    It boots the server and opens a GUI of sliders, starting from the
    **newest** snapshot. The "Start from snapshot" menu loads any older one, 
@@ -103,37 +103,27 @@ set `~bluetoothDevice` near the top of the file, then `s.quit` and re-run.
 
 ## Changing the sound design itself
 
-Only if you change the *structure* (new controls, different filters) do you
-need to recompile:
+If you change the simulation's *structure* (new controls, different filters)
+you do need to recompile:
 
 1. Edit the signal chain in `make_synthdef.scd` **and** make the same change in
    `date-param-profiles9.scd`. The two must stay yoked, or you'll tune
-   something the page doesn't play!
+   something the webpage doesn't play!
 2. Run `make_synthdef.scd` from `synthdefs/` which will compile `barosimPlayer.scsyndef`
 3. `lpfOrder` is fixed at compile time. If you change it, update it in all
    three places: `make_synthdef.scd`, the tuning GUI (`~lpfOrder`), and
    `date-profiles.json`.
 
-## Adding sound samples
+## To run it locally (e.g. testing)
 
-Put short stereo clips in `sounds/samples/` and add them to the
-`SAMPLES` list at the top of `index.html`'s script (and to `~sampleFiles` in
-the tuning GUI). Each file loads entirely into memory. Trim with ffmpeg,
-keeping stereo, e.g.:
-```
-ffmpeg -i original.wav -ss 00:01:00 -t 30 sound1.wav
-```
-
-## Run it locally
-
-Browsers won't load audio modules from `file://`. From the project root:
+From the project root:
 ```
 python3 -m http.server 8000
 ```
-Then open `http://localhost:8000/synthdefs/`. If it says the port is in use,
-try another number. If edits don't show up, hard-reload (Cmd+Shift+R) or use a
-private window; the plain server lets browsers cache files. Tested in Firefox
-and Chrome.
+Then point a browser to `http://localhost:8000/synthdefs/`. If it says the port is
+in use, try something like 8001. If edits don't show, hard-reload (Cmd+Shift+R) or use
+a private window; the plain server lets browsers cache files. Tested in Firefox,
+Chrome, Safari and iOS.
 
 ## Known issues
 
