@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Simulated Barotrauma</title>
+<style>
+  :root {
+    --bg: #12130f;
+    --panel: #1a1c16;
+    --line: #33362b;
+    --ink: #ffffff;
+    --dim: #9c9d8f;
+    --accent: #3fc7bd;
+    --accent-dim: #1f6b64;
+    --mono: "IBM Plex Mono", "SF Mono", Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--mono);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 16px;
+  }
+  .device {
+    width: 100%;
+    max-width: 460px;
+    border: 1px solid var(--line);
+    background: var(--panel);
+    padding: 28px 26px 24px;
+  }
+  .device-label {
+    font-size: 11px;
+    letter-spacing: 0.01em;
+    color: var(--ink);
+    margin: 0 0 18px;
+  }
+  h1 {
+    font-size: 18px;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    margin: 0 0 6px;
+    color: var(--ink);
+  }
+  .row {
+    border-top: 1px solid var(--line);
+    padding: 16px 0;
+  }
+  .row:first-of-type { border-top: none; padding-top: 0; }
+  .row-label {
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--dim);
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+  }
+  .row-label span.val { color: var(--accent); }
+
+  select {
+    width: 100%;
+    background: #14150f;
+    color: var(--ink);
+    border: 1px solid var(--line);
+    padding: 10px 10px;
+    font-family: var(--mono);
+    font-size: 13px;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+  }
+  select:focus { outline: none; border-color: var(--accent); }
+
+  .choices { display: flex; gap: 8px; }
+  .choice {
+    flex: 1;
+    text-align: center;
+    padding: 9px 6px;
+    border: 1px solid var(--line);
+    color: var(--dim);
+    font-size: 13px;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    user-select: none;
+    transition: border-color 0.15s, color 0.15s, background 0.15s;
+  }
+  .choice:hover { border-color: var(--accent-dim); }
+  .choice.active {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: #142120;
+  }
+
+  /* Compact row: label + a single toggle/button share one line instead
+     of stacking, for controls that don't need a full-width row. */
+  .row-tight {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+  }
+  .row-tight .row-label {
+    margin-bottom: 0;
+    white-space: nowrap;
+  }
+  .row-tight .choice {
+    flex: none;
+    padding: 8px 14px;
+  }
+
+  input[type="range"] {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 2px;
+    background: var(--line);
+    outline: none;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px;
+    height: 14px;
+    background: var(--accent);
+    border-radius: 50%;
+    cursor: pointer;
+    margin-top: -6px;
+  }
+  input[type="range"]::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    background: var(--accent);
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+  }
+
+  .graph-wrap {
+    border: 1px solid var(--line);
+    background: #14150f;
+    padding: 10px 10px 4px;
+  }
+  .graph-note {
+    font-size: 11px;
+    color: var(--dim);
+    letter-spacing: 0.03em;
+    margin: 6px 2px 0;
+    display: flex;
+    justify-content: space-between;
+  }
+  .graph-note .legend { display: flex; gap: 12px; }
+  .legend-item { display: flex; align-items: center; gap: 5px; }
+  .swatch { width: 10px; height: 2px; display: inline-block; }
+  .swatch.l { background: var(--accent); }
+  .swatch.r { background: var(--dim); border-top: 1px dashed var(--dim); background: transparent; height: 0; width: 10px; }
+  .swatch.distortion { background: transparent; height: 0; width: 10px; border-top: 1px dashed #c96b4b; }
+
+  .transport {
+    display: flex;
+    align-items: stretch;
+    gap: 8px;
+    margin-top: 20px;
+  }
+  button.main {
+    flex: none;
+    padding: 8px 14px;
+    background: var(--accent);
+    color: #171712;
+    border: none;
+    font-family: var(--mono);
+    font-size: 13px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+  button.main:disabled { opacity: 0.4; cursor: default; }
+  button.stop {
+    flex: none;
+    padding: 8px 14px;
+    background: transparent;
+    color: var(--dim);
+    border: 1px solid var(--line);
+    font-family: var(--mono);
+    font-size: 13px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+  .date-field {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex: 1;
+    min-width: 0;
+  }
+  .date-field-label {
+    font-size: 11px;
+    letter-spacing: 0.01em;
+    color: var(--dim);
+    white-space: nowrap;
+  }
+  .transport-select {
+    flex: 1;
+    min-width: 0;
+    background: #14150f;
+    color: var(--ink);
+    border: 1px solid var(--line);
+    padding: 0 8px;
+    font-family: var(--mono);
+    font-size: 13px;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+  }
+  .transport-select:focus { outline: none; border-color: var(--accent); }
+
+  .status {
+    margin-top: 14px;
+    font-size: 12px;
+    color: var(--dim);
+    letter-spacing: 0.03em;
+    min-height: 14px;
+  }
+  .status.err { color: #c96b4b; }
+</style>
+</head>
+<body>
+
+<div class="device">
+  <h1>Simulated Barotrauma; a case study.</h1>
+  <p class="device-label">Patient-adjusted to match perception<sup>*</sup>. Use good headphones.</p>
+
+  <div class="row">
+    <div class="row-label">sound</div>
+    <select id="soundSelect"></select>
+  </div>
+
+  <div class="row">
+    <div class="row-label">ear</div>
+    <div class="choices" id="panChoices">
+      <div class="choice" data-pan="0">L</div>
+      <div class="choice active" data-pan="2">both</div>
+      <div class="choice" data-pan="1">R</div>
+    </div>
+  </div>
+
+  <div class="row row-tight">
+    <div class="row-label">tinnitus</div>
+    <div class="choice active" id="toneToggle">4000 Hz — on</div>
+  </div>
+
+  <div class="row">
+    <div class="row-label">
+      <span>ear profile</span>
+      <span class="val" id="cutoffLabel"></span>
+    </div>
+    <div class="graph-wrap">
+      <svg id="responseGraph" viewBox="0 0 400 100" width="100%" height="100"></svg>
+      <div class="graph-note">
+        <span>20Hz</span>
+        <span class="legend">
+          <span class="legend-item"><span class="swatch l"></span>L</span>
+          <span class="legend-item"><span class="swatch distortion"></span>distortion</span>
+          <span class="legend-item"><span class="swatch r"></span>R</span>
+        </span>
+        <span>20kHz</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="row-label">
+      <span>loudness</span>
+      <span class="val" id="loudnessVal">0.25</span>
+    </div>
+    <input type="range" id="loudnessSlider" min="0" max="1" step="0.01" value="0.25" />
+  </div>
+
+  <div class="transport">
+    <button class="main" id="bootBtn">boot</button>
+    <button class="stop" id="playBtn" disabled>play</button>
+    <button class="stop" id="stopBtn" disabled>stop</button>
+    <div class="date-field">
+      <span class="date-field-label"><sup>*</sup>date</span>
+      <select id="dateSelect" class="transport-select" disabled>
+        <option value=""></option>
+      </select>
+    </div>
+  </div>
+
+  <p class="status" id="status">not booted — click boot to start audio</p>
+</div>
+
+<script type="module">
+  // Self-hosted engine (avoids relying on unpkg.com's CDN at runtime —
+  // more reliable across browsers, and works offline once downloaded).
+  // See README.md for how to fetch these files.
+  import { SuperSonic } from "./engine/supersonic.js";
+
+  // --- config -------------------------------------------------
+  // Add/remove entries here — the dropdown builds itself from this list.
+  // Each `file` is relative to sampleBaseURL (./samples/).
+  const SAMPLES = [
+    { file: "sound1_gynt_trim.flac", label: "Grieg (Peer Gynt)" },
+    { file: "sound2_poem.flac", label: "Poem (Teasdale)" },
+    { file: "sound3_peruvian_city-ambience_trim.flac", label: "Street Sounds (Peru)" },
+    { file: "sound4_tlalocs_sky.wav", label: "EDM (Stereo Surgeon)" },
+  ];
+  const SYNTHDEF_NAME = "barosimPlayer";
+
+  // All damage-chain numbers (cutoff, rq, distortion settings, tinnitus tone
+  // frequency/level, ...) now live in date-profiles.json, the single
+  // source of truth shared with the SuperCollider tuning GUI. Loaded at
+  // startup by loadProfiles() below. Shape:
+  //   { lpfOrder, defaultDate, dates: [{ value, label, params: {...} }] }
+  // Entries other than the default date only need the params that
+  // differ; anything omitted is inherited from the default date.
+  //
+  // UI-owned controls are NOT taken from the JSON: panMode, toneOn, buf
+  // and amp come from the page. loudnessAmt is the one hybrid: the
+  // profile sets the loudness slider's starting position, after which
+  // the slider is in charge.
+  const PROFILES_URL = "./date-profiles.json";
+  const OUTPUT_AMP = 0.7; // final output trim, same as the synthdef default
+  const LOUDNESS_SCALE = 2; // slider shows 0-1; the synth receives 0-2
+
+  // Filled in by loadProfiles().
+  let LPF_ORDER = 3;      // informational: compile-time in the synthdef
+  let DATE_PROFILES = [];
+  let BASE_DATE = null;    // oldest entry: params missing from other entries are inherited from it
+  let INITIAL_DATE = null; // selected on load: the newest entry, or "defaultDate" from the JSON if set
+  let profilesReady = false;
+  // Params the graph / tone label read directly; the default date must define them.
+  const REQUIRED_PARAMS = ["cutoff", "rq", "hpfCutoff", "distortionLpf", "toneFreq", "toneAmp"];
+  // --------------------------------------------------------------
+
+  const supersonic = new SuperSonic({
+    baseURL: "./engine/",
+    synthdefBaseURL: "./",
+    sampleBaseURL: "../sounds/samples/",
+  });
+  window.supersonic = supersonic; // for debugging in the browser console
+
+  // Surface scsynth errors (e.g. "Node not found") instead of dropping them.
+  supersonic.on("in", (msg) => {
+    if (msg[0] === "/fail") console.warn("scsynth:", ...msg.slice(1));
+  });
+
+  // Synths live in the root group (0). Group 1 isn't guaranteed to exist,
+  // and a /s_new into a missing group fails silently. Live controls go to
+  // the group, so they reach every running synth, including one still
+  // fading out after a restart, rather than a single remembered node ID.
+  const SYNTH_GROUP = 0;
+  function setLive(name, value) {
+    supersonic.send("/n_set", SYNTH_GROUP, name, value);
+  }
+
+  const statusEl = document.getElementById("status");
+  const bootBtn = document.getElementById("bootBtn");
+  const playBtn = document.getElementById("playBtn");
+  const stopBtn = document.getElementById("stopBtn");
+  const soundSelect = document.getElementById("soundSelect");
+  const panChoices = document.querySelectorAll("#panChoices .choice");
+  const loudnessSlider = document.getElementById("loudnessSlider");
+  const loudnessVal = document.getElementById("loudnessVal");
+  const cutoffLabel = document.getElementById("cutoffLabel");
+  const graphSvg = document.getElementById("responseGraph");
+  const toneToggle = document.getElementById("toneToggle");
+  const dateSelect = document.getElementById("dateSelect");
+
+  let booted = false;
+  let currentNodeId = null;
+  let selectedBuf = 0;
+  let selectedPan = 2; // 0=L, 1=R, 2=both
+  let loudnessAmt = Number(loudnessSlider.value) * LOUDNESS_SCALE;
+  let toneOn = true;
+
+  function setStatus(msg, isErr = false) {
+    statusEl.textContent = msg;
+    statusEl.classList.toggle("err", isErr);
+  }
+
+  // --- populate sound dropdown ---
+  SAMPLES.forEach((s, i) => {
+    const opt = document.createElement("option");
+    opt.value = i;
+    opt.textContent = s.label;
+    soundSelect.appendChild(opt);
+  });
+
+  soundSelect.addEventListener("change", () => {
+    selectedBuf = Number(soundSelect.value);
+    if (currentNodeId !== null) {
+      stopSynth();
+      playSynth();
+    }
+  });
+
+  // --- date dropdown (per-date parameter sets, from date-profiles.json) ---
+  let currentDateParams = {};
+
+  // "2027-04-12" -> "Apr 12, 2027" (used when an entry has no "label")
+  function formatDateLabel(value) {
+    const dt = new Date(`${value}T00:00:00Z`);
+    return isNaN(dt)
+      ? value
+      : dt.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
+  }
+
+  function populateDateSelect() {
+    dateSelect.innerHTML = "";
+    DATE_PROFILES.forEach((d) => {
+      const opt = document.createElement("option");
+      opt.value = d.value;
+      opt.textContent = d.label;
+      dateSelect.appendChild(opt);
+    });
+    dateSelect.value = INITIAL_DATE;
+    dateSelect.disabled = false;
+  }
+
+  // Effective params for a date = default date's params, overridden by
+  // that date's own entries.
+  function resolveParams(value) {
+    const base = DATE_PROFILES.find((d) => d.value === BASE_DATE);
+    const profile = DATE_PROFILES.find((d) => d.value === value);
+    return { ...(base ? base.params : {}), ...(profile ? profile.params : {}) };
+  }
+
+  function applyDateProfile(value) {
+    currentDateParams = resolveParams(value);
+    // loudnessAmt is also a live UI control: the profile supplies its
+    // starting position, the slider takes over from there.
+    if (typeof currentDateParams.loudnessAmt === "number") {
+      loudnessAmt = currentDateParams.loudnessAmt;
+      loudnessSlider.value = loudnessAmt / LOUDNESS_SCALE;
+      loudnessVal.textContent = (loudnessAmt / LOUDNESS_SCALE).toFixed(2);
+    }
+    updateToneLabel();
+    drawGraph();
+  }
+
+  dateSelect.addEventListener("change", () => {
+    applyDateProfile(dateSelect.value);
+    if (currentNodeId !== null) {
+      stopSynth();
+      playSynth();
+    }
+  });
+
+  // --- pan choices ---
+  panChoices.forEach((el) => {
+    el.addEventListener("click", () => {
+      panChoices.forEach((c) => c.classList.remove("active"));
+      el.classList.add("active");
+      selectedPan = Number(el.dataset.pan);
+      if (currentNodeId !== null) {
+        setLive("panMode", selectedPan);
+      }
+      drawGraph();
+    });
+  });
+
+  // --- tinnitus toggle ---
+  function updateToneLabel() {
+    const hz = currentDateParams.toneFreq;
+    if (hz === undefined) return; // profiles not loaded yet
+    const khz = (hz / 1000).toFixed(hz % 1000 === 0 ? 0 : 1);
+    toneToggle.textContent = `${khz}k Hz — ${toneOn ? "on" : "off"}`;
+    toneToggle.classList.toggle("active", toneOn);
+  }
+
+  toneToggle.addEventListener("click", () => {
+    toneOn = !toneOn;
+    updateToneLabel();
+    if (currentNodeId !== null) {
+      setLive("toneOn", toneOn ? 1 : 0);
+    }
+  });
+  updateToneLabel();
+
+  // --- loudness slider ---
+  loudnessSlider.addEventListener("input", () => {
+    loudnessAmt = Number(loudnessSlider.value) * LOUDNESS_SCALE;
+    loudnessVal.textContent = Number(loudnessSlider.value).toFixed(2);
+    if (currentNodeId !== null) setLive("loudnessAmt", loudnessAmt);
+  });
+  loudnessVal.textContent = (loudnessAmt / LOUDNESS_SCALE).toFixed(2);
+
+  // --- frequency response graph ---
+  // Two curves make up the L channel's shape, drawn separately since
+  // they're summed signals (not one filter response). The distortion
+  // band's actual presence also depends on the moment-to-moment
+  // loudness envelope and on distortionAmt, which a static frequency graph
+  // can't show, so this plots where each PATH lives in the spectrum
+  // (relative to its own 0 dB), not an instantaneous transfer function.
+  //
+  // LPF path: `LPF_ORDER` cascaded RLPF stages. The per-stage math is
+  // SuperCollider's actual RLPF difference equation
+  //   y[n] = a0*x[n] + b1*y[n-1] + b2*y[n-2];  out = y[n] + 2*y[n-1] + y[n-2]
+  // evaluated on the unit circle, NOT the textbook resonant-filter
+  // formula, so the resonant peak height matches what you hear.
+  //
+  // Distortion band: HPF at hpfCutoff then LPF at distortionLpf, each modeled
+  // as a 2-pole Butterworth (what SC's HPF.ar / LPF.ar use):
+  //   HPF: mag^2 = 1 / (1 + (fc/f)^4)    LPF: mag^2 = 1 / (1 + (f/fc)^4)
+  const GRAPH_W = 400, GRAPH_H = 100;
+  const F_MIN = 20, F_MAX = 20000;
+  const GRAPH_SR = 48000; // typical AudioContext rate; shape barely changes at 44.1k
+  const DB_MIN = -48;
+  let dbMax = 6; // raised per-draw if the resonant peak needs more headroom
+
+  function xForFreq(f) {
+    const t = Math.log10(f / F_MIN) / Math.log10(F_MAX / F_MIN);
+    return t * GRAPH_W;
+  }
+  function yForDb(db) {
+    const t = (db - dbMax) / (DB_MIN - dbMax);
+    return Math.max(0, Math.min(GRAPH_H, t * GRAPH_H));
+  }
+  function rlpfStageDb(f, fc, rq) {
+    const q = Math.max(0.001, rq);
+    const pf = (2 * Math.PI * fc) / GRAPH_SR;
+    const D = Math.tan(pf * q * 0.5);
+    const C = (1 - D) / (1 + D);
+    const b1 = (1 + C) * Math.cos(pf);
+    const b2 = -C;
+    const a0 = (1 + C - b1) * 0.25;
+    const w = (2 * Math.PI * f) / GRAPH_SR;
+    const num = a0 * (2 + 2 * Math.cos(w));
+    const re = 1 - b1 * Math.cos(w) - b2 * Math.cos(2 * w);
+    const im = b1 * Math.sin(w) + b2 * Math.sin(2 * w);
+    return 20 * Math.log10(Math.max(1e-9, num / Math.hypot(re, im)));
+  }
+  function cascadedLpfDb(f, fc, rq, order) {
+    return order * rlpfStageDb(f, fc, rq);
+  }
+  function hpfDb(f, fc) {
+    return -10 * Math.log10(1 + Math.pow(fc / f, 4));
+  }
+  function lpfDb(f, fc) {
+    return -10 * Math.log10(1 + Math.pow(f / fc, 4));
+  }
+
+  // curveFn(f) -> dB, or null for a flat 0dB line (used for R/unfiltered)
+  function buildCurvePath(curveFn) {
+    const steps = 160;
+    let d = "";
+    for (let i = 0; i <= steps; i++) {
+      const f = F_MIN * Math.pow(F_MAX / F_MIN, i / steps);
+      const x = xForFreq(f);
+      const y = yForDb(curveFn ? curveFn(f) : 0);
+      d += (i === 0 ? "M" : "L") + x.toFixed(1) + "," + y.toFixed(1) + " ";
+    }
+    return d;
+  }
+
+  function drawGraph() {
+    if (!profilesReady) return;
+    const showL = selectedPan === 0 || selectedPan === 2;
+    const showR = selectedPan === 1 || selectedPan === 2;
+    const { cutoff, rq, hpfCutoff, distortionLpf } = currentDateParams;
+    const hasGap = hpfCutoff > cutoff;
+
+    const lCurve = (f) => cascadedLpfDb(f, cutoff, rq, LPF_ORDER);
+    const distortionCurve = (f) => hpfDb(f, hpfCutoff) + lpfDb(f, distortionLpf);
+
+    // Leave headroom above 0 dB so a resonant peak isn't clipped flat.
+    let peak = 0;
+    for (let i = 0; i <= 160; i++) {
+      peak = Math.max(peak, lCurve(F_MIN * Math.pow(F_MAX / F_MIN, i / 160)));
+    }
+    dbMax = Math.max(6, Math.ceil(peak) + 2);
+
+    const lPath = buildCurvePath(lCurve);
+    const distortionPath = buildCurvePath(distortionCurve);
+    const rPath = buildCurvePath(null); // flat, no filter
+
+    const cutoffX = xForFreq(cutoff);
+    const hpfX = xForFreq(hpfCutoff);
+    const lpfX = xForFreq(distortionLpf);
+
+    graphSvg.innerHTML = `
+      <line x1="0" y1="${GRAPH_H - 1}" x2="${GRAPH_W}" y2="${GRAPH_H - 1}" stroke="#33362b" stroke-width="1"/>
+      ${showL && hasGap ? `<rect x="${cutoffX.toFixed(1)}" y="0" width="${(hpfX - cutoffX).toFixed(1)}" height="${GRAPH_H}" fill="#3fc7bd" opacity="0.07"/>` : ""}
+      ${showL ? `<line x1="${cutoffX}" y1="0" x2="${cutoffX}" y2="${GRAPH_H}" stroke="#33362b" stroke-width="1" stroke-dasharray="2,2"/>` : ""}
+      ${showL ? `<line x1="${hpfX}" y1="0" x2="${hpfX}" y2="${GRAPH_H}" stroke="#33362b" stroke-width="1" stroke-dasharray="2,2"/>` : ""}
+      ${showL ? `<line x1="${lpfX}" y1="0" x2="${lpfX}" y2="${GRAPH_H}" stroke="#33362b" stroke-width="1" stroke-dasharray="2,2"/>` : ""}
+      ${showR ? `<path d="${rPath}" fill="none" stroke="#8b8c7f" stroke-width="1.5" stroke-dasharray="3,3"/>` : ""}
+      ${showL ? `<path d="${distortionPath}" fill="none" stroke="#c96b4b" stroke-width="1.5" stroke-dasharray="4,2"/>` : ""}
+      ${showL ? `<path d="${lPath}" fill="none" stroke="#3fc7bd" stroke-width="1.5"/>` : ""}
+    `;
+
+    cutoffLabel.textContent = showL
+      ? hasGap
+        ? `${(cutoff / 1000).toFixed(1)}kHz ↓ gap ${(hpfCutoff / 1000).toFixed(1)}kHz↑`
+        : `${(cutoff / 1000).toFixed(1)}kHz corner`
+      : "no filter (R)";
+  }
+
+  // --- transport ---
+  function playSynth() {
+    // Every tuned param from the selected date's profile is sent, so a
+    // param added to date-profiles.json reaches the synth with no code
+    // change here. UI-owned controls override (or supply) their own.
+    const p = {
+      ...currentDateParams,
+      buf: selectedBuf,
+      panMode: selectedPan,
+      loudnessAmt: loudnessAmt,
+      toneOn: toneOn ? 1 : 0,
+      amp: OUTPUT_AMP,
+    };
+    const args = Object.entries(p)
+      .filter(([, v]) => typeof v === "number")
+      .flat();
+
+    currentNodeId = supersonic.nextNodeId();
+    supersonic.send("/s_new", SYNTHDEF_NAME, currentNodeId, 0, SYNTH_GROUP, ...args);
+    playBtn.disabled = true;
+    stopBtn.disabled = false;
+    setStatus("playing");
+  }
+
+  function stopSynth() {
+    if (currentNodeId !== null) {
+      supersonic.send("/n_set", currentNodeId, "gate", 0);
+      currentNodeId = null;
+    }
+    playBtn.disabled = false;
+    stopBtn.disabled = true;
+    setStatus("stopped");
+  }
+
+  bootBtn.addEventListener("click", async () => {
+    if (booted) return;
+    bootBtn.disabled = true;
+    try {
+      setStatus("booting engine…");
+      await supersonic.init();
+
+      setStatus("loading synthdef…");
+      await supersonic.loadSynthDef(SYNTHDEF_NAME);
+
+      setStatus("loading samples…");
+      for (let i = 0; i < SAMPLES.length; i++) {
+        await supersonic.loadSample(i, SAMPLES[i].file);
+      }
+
+      booted = true;
+      playBtn.disabled = false;
+      setStatus("ready");
+    } catch (err) {
+      console.error(err);
+      setStatus(`boot failed — ${err.message || err}`, true);
+      bootBtn.disabled = false;
+    }
+  });
+
+  playBtn.addEventListener("click", playSynth);
+  stopBtn.addEventListener("click", stopSynth);
+
+  // --- load date-profiles.json, then enable the UI ---
+  async function loadProfiles() {
+    bootBtn.disabled = true;
+    setStatus("loading date profiles…");
+    try {
+      const res = await fetch(PROFILES_URL, { cache: "no-cache" });
+      if (!res.ok) throw new Error(`HTTP ${res.status} for ${PROFILES_URL}`);
+      const data = await res.json();
+
+      if (!Array.isArray(data.dates) || data.dates.length === 0) {
+        throw new Error("no entries in \"dates\"");
+      }
+      // Validate and de-duplicate, then sort oldest -> newest so the dropdown
+      // reads as a timeline (ISO dates sort correctly as plain strings).
+      const seen = new Set();
+      const entries = [];
+      for (const d of data.dates) {
+        if (!d || typeof d.value !== "string" || !d.params || typeof d.params !== "object") {
+          console.warn('date-profiles.json: skipping an entry without a string "value" and a "params" object', d);
+          continue;
+        }
+        if (seen.has(d.value)) {
+          console.warn(`date-profiles.json: duplicate date ${d.value}; keeping the first`);
+          continue;
+        }
+        seen.add(d.value);
+        for (const [k, v] of Object.entries(d.params)) {
+          if (typeof v !== "number") {
+            throw new Error(`entry ${d.value}: "${k}" must be a number (no quotes)`);
+          }
+        }
+        entries.push({ ...d, label: d.label || formatDateLabel(d.value) });
+      }
+      if (entries.length === 0) throw new Error('no usable entries in "dates"');
+
+      DATE_PROFILES = entries.sort((a, b) => (a.value < b.value ? -1 : a.value > b.value ? 1 : 0));
+      BASE_DATE = DATE_PROFILES[0].value;
+      INITIAL_DATE = DATE_PROFILES.some((d) => d.value === data.defaultDate)
+        ? data.defaultDate
+        : DATE_PROFILES[DATE_PROFILES.length - 1].value;
+      if (Number.isInteger(data.lpfOrder)) LPF_ORDER = data.lpfOrder;
+
+      // Every entry must resolve to the params the graph and tone label need.
+      for (const d of DATE_PROFILES) {
+        const resolved = resolveParams(d.value);
+        const missing = REQUIRED_PARAMS.filter((k) => typeof resolved[k] !== "number");
+        if (missing.length) throw new Error(`entry ${d.value} is missing: ${missing.join(", ")}`);
+      }
+
+      profilesReady = true;
+      populateDateSelect();
+      applyDateProfile(INITIAL_DATE);
+      bootBtn.disabled = false;
+      setStatus("not booted — click boot to start audio");
+    } catch (err) {
+      console.error(err);
+      const hint = err && err.name === "SyntaxError"
+        ? " (check for a missing or extra comma or brace in the file)"
+        : "";
+      setStatus(`couldn't load date-profiles.json — ${err.message || err}${hint}`, true);
+    }
+  }
+  loadProfiles();
+</script>
+
+<script data-goatcounter="https://barotraumasim.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
+</body>
+</html>

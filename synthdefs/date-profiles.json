@@ -1,0 +1,38 @@
+{
+  "_notes": [
+    "Read by index.html at startup. Each entry in 'dates' is one assessment snapshot; 'params' are the synth args sent at note-on.",
+    "To add a snapshot, append an entry to 'dates' (the tuning GUI's 'export JSON entry' button prints one, ready to paste). Dates are YYYY-MM-DD; the page sorts them oldest to newest and opens on the newest.",
+    "Keep every snapshot complete (the export is). A param left out of an entry is inherited from the OLDEST entry, so retuning the oldest entry would also change any entry that relies on inheritance.",
+    "Optional top-level 'defaultDate' (a 'value' string) opens the page on that date instead of the newest.",
+    "lpfOrder is compile-time in make_synthdef.scd; it is listed here only so the response graph matches the synth. Keep them in sync.",
+    "UI-owned controls (panMode, toneOn, amp, buf) are intentionally not here. loudnessAmt sets the loudness slider's starting position (the slider shows loudnessAmt / 2)."
+  ],
+  "lpfOrder": 3,
+  "dates": [
+    {
+      "value": "2026-10-04",
+      "label": "Oct 4, 2026",
+      "params": {
+        "cutoff": 2886.0881216287,
+        "rq": 0.90452261306533,
+        "hpfCutoff": 4127.3795995172,
+        "loudnessAmt": 0.5,
+        "carrierFreq": 9060.4303406228,
+        "wobbleRate": 0.3,
+        "wobbleDepth": 150,
+        "dustDensity": 0.65843185309129,
+        "dustDecay": 0.0088953315534101,
+        "dustAmt": 2.5326633165829,
+        "distortionAmt": 0.030150753768844,
+        "distortionLpf": 10282.181649775,
+        "dustAttack": 0.001,
+        "envAttack": 0.01,
+        "envRelease": 0.25,
+        "envSense": 2.05,
+        "envCurve": 1.4120603015075,
+        "toneFreq": 4000,
+        "toneAmp": 0.0027638190954774
+      }
+    }
+  ]
+}
