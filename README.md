@@ -36,16 +36,18 @@ It shows shape only, not level; the distortion's quieter than its curve suggests
 
 ```
 barosim
+├── index.html
+├── LICENSE
+├── README.md
 ├── sounds
-│   └── samples
+│   └── samples
 └── synthdefs
     ├── barosimPlayer.scsyndef
     ├── date-param-profiles9.scd
     ├── date-profiles.json
     ├── engine
     ├── index.html
-    ├── make_synthdef.scd
-    └── README.md
+    └── make_synthdef.scd
 ```
 
 `index.html` sits in `synthdefs/`, so its paths are `./` (synth, engine, JSON)
@@ -133,24 +135,10 @@ try another number. If edits don't show up, hard-reload (Cmd+Shift+R) or use a
 private window; the plain server lets browsers cache files. Tested in Firefox
 and Chrome.
 
-## Host on GitHub Pages
-
-Push the repo, then **Settings → Pages**: deploy from branch `main`, folder
-`/ (root)`. The page will be at
-`https://<username>.github.io/<repo>/synthdefs/`. Notes:
-
-- Filenames are case-sensitive on Pages.
-- Pages caches for a few minutes, so a fresh push may take a moment to appear.
-- Confirm it plays on the live URL on different systems and browsers before sharing.
-
-## Known issues / before going public
+## Known issues
 
 - **No output limiter.** Loud material plus the filter's resonance can clip on
   headphones. Keep loudness moderate; adding a limiter is recommended.
-- **Sample rights.** Check licenses and credit for every clip in
-  `sound_sources.txt`, and leave `sounds/origs/` out of the repo.
-- The browser and the SuperCollider app run at different sample rates and the
-  crunchy bursts are random, so they sound very close, not identical.
 
 ## About SuperSonic
 
