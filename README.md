@@ -6,6 +6,8 @@ Built on SuperCollider's engine, ver 3.14.0,
 compiled to WebAssembly by [SuperSonic] ver 0.88.0.
 **Use good headphones, and start with low volume.**
 
+**[Try it in your browser →](https://samtorrisi.github.io/barotraumasim/)**
+
 by Sam Torrisi + Claude Sonnet 5.5, July-Oct 2026
 
 ## What you hear
