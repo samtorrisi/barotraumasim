@@ -4,7 +4,7 @@ A simulation of one patient's hearing damage.
 Designed to allow others to hear what the patient hears.
 Built on SuperCollider's engine, ver 3.14.0,
 compiled to WebAssembly by [SuperSonic] ver 0.88.0.
-**Use good headphones, and start with low volume.**
+**Use good headphones.**
 
 **[Try it in your browser →](https://samtorrisi.github.io/barotraumasim/)**
 
