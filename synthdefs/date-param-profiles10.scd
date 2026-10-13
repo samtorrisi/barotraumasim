@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------
-// date-param-profiles9.scd. for barosim project, ST + claude Oct '26
+// date-param-profiles10.scd. for barosim project, ST + claude Oct '26
 //
 // GUI-based tuning rig for barosimPlayer's damage-chain parameters —
 // RING-MOD + DUST distortion version, simplified to mirror
@@ -21,12 +21,12 @@
 //      No recompile needed. Recompile make_synthdef.scd only if the DSP
 //      graph itself changed.
 //
-// MATCHES PRODUCTION: as of v9, make_synthdef.scd has the identical
+// MATCHES PRODUCTION: as of v10, make_synthdef.scd has the identical
 // graph and the same arg defaults (including distortionAmt, distortionLpf
 // and dustAttack), and index.html reads its numbers from
 // date-profiles.json. If you change the DSP graph here, mirror it in
-// make_synthdef.scd and recompile; if you only retune values, paste
-// them into date-profiles.json (no recompile needed).
+// make_synthdef.scd and recompile; if you only tweak values, paste
+// them into date-profiles.json and no recompile is needed.
 //
 // LAYOUT: the main window shows only the controls that matter most.
 // The "advanced" button reveals a third column (wobble, dust decay,
@@ -62,7 +62,7 @@ if (~bluetoothDevice.notNil) {
 ~sampleFiles = [
 	"sound1_gynt_trim.flac",
 	"sound2_poem.flac",
-	"sound3_peruvian_city-ambience_trim.flac",
+	"sound3_coffeeshop_trim.flac",
 	"sound4_tlalocs_sky.wav"
 ];
 
@@ -190,7 +190,7 @@ s.waitForBoot({
 		// loudness-tracking: distortion amount rides on how loud THIS
 		// MOMENT of drivenRaw is — quiet passages are barely distorted, loud
 		// ones are distorted hard. This is the mechanism behind "more of it
-		// when the sounds are louder." 
+		// when the sounds are louder."
 		loudness = Amplitude.kr(drivenRaw, envAttack, envRelease);
 		loudness = (loudness * envSense).clip(0, 1) ** envCurve;
 
@@ -552,7 +552,7 @@ s.waitForBoot({
 	~addSlider.value(~col2, "Carrier freq (Hz, exp)", \carrierFreq, 2000, 14000, \exp);
 	// Dust: average random crunch bursts per second. Low (1-4) = isolated
 	// crunches; high (20+) blurs into dense granularity.
-	~addSlider.value(~col2, "Dust density (events/sec, exp)", \dustDensity, 0.5, 40, \exp);
+	~addSlider.value(~col2, "Dust density (events/sec, exp)", \dustDensity, 0.5, 200, \exp);
 	// How much louder each crunch burst is than the steady distortion. 0 = no crunch.
 	~addSlider.value(~col2, "Dust amt (crunch boost, lin)", \dustAmt, 0, 4, \lin);
 	// How strongly distortion follows the sound's loudness: sense lifts
@@ -627,4 +627,4 @@ s.waitForBoot({
 // defaults above, but SC's Slider GUI doesn't re-fire .action on
 // programmatic .value_ sets — so the post window's initial printout
 // (above) reflects the true starting state even before you touch
-// anything; moving sliders afterward starts live updates.
+// anything; moving sliders afterward starts live updates; see post window.

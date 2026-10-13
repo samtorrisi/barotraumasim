@@ -9,28 +9,29 @@
   ],
   "lpfOrder": 3,
   "dates": [
-    {
+          {
       "value": "2026-10-04",
-      "label": "Oct 4, 2026",
+      "label": "Oct 04, 2026",
       "params": {
-        "cutoff": 2886.0881216287,
-        "rq": 0.90452261306533,
-        "hpfCutoff": 4127.3795995172,
-        "loudnessAmt": 0.5,
+        "cutoff": 1955.4556937278,
+        "rq": 0.65866834170854,
+        "hpfCutoff": 5453.7031715907,
+        "loudnessAmt": 0.7713567839196,
         "carrierFreq": 9060.4303406228,
-        "wobbleRate": 0.3,
-        "wobbleDepth": 150,
-        "dustDensity": 0.65843185309129,
+        "wobbleRate": 0.29915764132278,
+        "wobbleDepth": 145.72864321608,
+        "dustDensity": 23.066321165904,
         "dustDecay": 0.0088953315534101,
         "dustAmt": 2.5326633165829,
-        "distortionAmt": 0.030150753768844,
+        "distortionAmt": 0.26381909547739,
         "distortionLpf": 10282.181649775,
         "dustAttack": 0.001,
+        "earLpf": 10304.150776822,
         "envAttack": 0.01,
         "envRelease": 0.25,
         "envSense": 2.05,
         "envCurve": 1.4120603015075,
-        "toneFreq": 4000,
+        "toneFreq": 4000.0,
         "toneAmp": 0.0027638190954774
       }
     }

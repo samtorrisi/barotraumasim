@@ -1,9 +1,11 @@
 # barosim
 
-A simulation of a single patient's hearing damage.
+A simulation of a single patient's sudden sensorineural hearing loss (SSNHL). 
 Designed to let others to hear what the patient hears.
-Built on SuperCollider's engine, compiled to WebAssembly 
-by [SuperSonic].
+The distortion is slightly exaggerated at lower LOUDNESS levels, but less exaggerated when LOUDNESS 
+is high. The simulation is compiled to one's browser and actively runs on the user's system, e.g.
+there are no modified sound sample files but rather samples played through a sound processing 
+chain in real-time. Built on SuperCollider's engine, compiled to WebAssembly by SuperSonic.
 **Use good headphones.**
 
 **[Try it in your browser →](https://samtorrisi.github.io/barotraumasim/)**
@@ -21,16 +23,16 @@ simulation consists of three layers:
    which makes harsh, metallic tones that follow the original sound's
    rhythm but aren't in tune with it. Random crunchy bursts add granularity on top, 
    and the result is confined to a high band.
-3. **Tinnitus.** A steady, faint 4 kHz sine. It ignores the
-   loudness slider on purpose: the patient notices it when all else is quiet.
+3. **Tinnitus.** A steady, faint 4 kHz sine. It ignores the loudness slider on purpose: 
+the patient notices it when all else is quiet.
 
 The **loudness** slider is volume but also scales the sound *before* the filters, 
 so it changes how much distortion you get and how much the filter rings. 
-For the right ear it's simply volume.
+For the right ear LOUDNESS is simply volume.
 
 The **response graph** shows the left ear's filter shapes: teal is the
 muffling, orange is the distortion band, grey dashed line is the clean right ear.
-It shows shape only, not level; the distortion's quieter than its curve suggests.
+It illustrates shape only, not level.
 
 ## Project layout
 
@@ -43,7 +45,7 @@ barosim
 │   └── samples
 └── synthdefs
     ├── barosimPlayer.scsyndef
-    ├── date-param-profiles9.scd
+    ├── date-param-profiles10.scd
     ├── date-profiles.json
     ├── engine
     ├── index.html
@@ -83,10 +85,10 @@ not the file. Keep every entry complete: anything left out is inherited from
 the *oldest* entry, so retuning that one would silently change the others.
 `lpfOrder` (number of filters in a row) is only listed so the graph matches the synth.
 
-## Workflow: when patient wants a new assessment: use date-param-profiles9.scd
+## Workflow: when patient wants a new assessment: use date-param-profiles10.scd
 
 0. The purpose of a new assessment is to document potential healing across time.
-1. In the SuperCollider IDE, open `date-param-profiles9.scd` and run it.
+1. In the SuperCollider IDE, open `date-param-profiles10.scd` and run it.
    It boots the server and opens a GUI of sliders, starting from the
    **newest** snapshot. The "Start from snapshot" menu loads any older one, 
    so you can compare them by ear.
@@ -107,7 +109,7 @@ If you change the simulation's *structure* (new controls, different filters)
 you do need to recompile:
 
 1. Edit the signal chain in `make_synthdef.scd` **and** make the same change in
-   `date-param-profiles9.scd`. The two must stay yoked, or you'll tune
+   `date-param-profiles10.scd`. The two must stay yoked, or you'll tune
    something the webpage doesn't play!
 2. Run `make_synthdef.scd` from `synthdefs/` which will compile `barosimPlayer.scsyndef`
 3. `lpfOrder` is fixed at compile time. If you change it, update it in all
@@ -129,6 +131,11 @@ Chrome, Safari and iOS.
 
 - **No output limiter.** Loud material plus the filter's resonance can clip on
   headphones. Keep loudness moderate; adding a limiter is recommended.
+
+- **Still not totally realistic.** This is basically a cartoon of what the patient
+  actually experiences. There are many subtleties, in both the quality of the 
+  distortion and the behavior of the tinnitus, that aren't captured here without
+  a ton more (unpaid) work. The purpose, therefore, is educational and illustrative.
 
 ## About SuperSonic
 
