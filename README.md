@@ -70,7 +70,7 @@ newest.
 | `envAttack`, `envRelease` | how fast that tracking reacts |
 | `wobbleRate`, `wobbleDepth` | how fast and how far the distortion's pitch drifts |
 | `toneFreq`, `toneAmp` | tinnitus pitch and level |
-| `loudnessAmt` | where the loudness slider starts (the slider shows half this value, so 0.5 reads as 0.25) |
+| `loudnessAmt` | where the loudness slider starts |
 
 Ear, tinnitus on/off, sound choice and output level are controlled by the page,
 not the file. Keep every entry complete: anything left out is inherited from
