@@ -16,7 +16,7 @@
         "cutoff": 1955.4556937278,
         "rq": 0.65866834170854,
         "hpfCutoff": 5453.7031715907,
-        "loudnessAmt": 0.7713567839196,
+        "loudnessAmt": 0.50,
         "carrierFreq": 9060.4303406228,
         "wobbleRate": 0.29915764132278,
         "wobbleDepth": 145.72864321608,
