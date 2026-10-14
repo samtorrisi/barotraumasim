@@ -55,11 +55,7 @@ barosim
 
 All the numbers that define the damage are there, one entry per assessment
 date. The page reads them at startup, sorts oldest to newest, and opens on the
-newest. Switching dates restarts playback with that date's sound.
-
-```json
-{ "value": "2026-10-04", "label": "Oct 4, 2026", "params": { "cutoff": 1955, "rq": 0.66, ... } }
-```
+newest.
 
 | Parameter | What it does |
 |---|---|
